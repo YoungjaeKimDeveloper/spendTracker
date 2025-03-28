@@ -15,6 +15,15 @@ class _HomePageState extends State<HomePage> {
   // text controllers
   TextEditingController nameController = TextEditingController();
   TextEditingController amountController = TextEditingController();
+
+  // Stateful -> 위젯을 생성할때마다 새로운 state를 설정하겠다는 의미임
+  // 화면에 그려질때 데이터를 불러오겠단는것을 의미함
+  @override
+  void initState() {
+    Provider.of<ExpenseDatabase>(context, listen: false).readExpenses();
+    super.initState();
+  }
+
   // open new expense box
   void openNewExpenseBox() {
     showDialog(
@@ -39,8 +48,9 @@ class _HomePageState extends State<HomePage> {
             ),
             actions: [
               // cancel Button
-
+              _cancelButton(),
               // Save Button
+              _createNewExpensesButton(),
             ],
           ),
     );
@@ -48,15 +58,31 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        onPressed: openNewExpenseBox,
-        child: Icon(Icons.add),
-      ),
+    return Consumer<ExpenseDatabase>(
+      builder:
+          (context, value, child) => Scaffold(
+            floatingActionButton: FloatingActionButton(
+              onPressed: openNewExpenseBox,
+              child: Icon(Icons.add),
+            ),
+            body: ListView.builder(
+              itemCount: value.allExpense.length,
+              itemBuilder: (context, index) {
+                // get individual expense
+                Expense individualExpense = value.allExpense[index];
+                // return list tile UI
+                return ListTile(
+                  title: Text(individualExpense.name),
+                  trailing: Text(individualExpense.amount.toString()),
+                );
+              },
+            ),
+          ),
     );
   }
 
   // Cancel Button
+  // ignore: unused_element
   Widget _cancelButton() {
     return MaterialButton(
       onPressed: () {
@@ -71,6 +97,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   // SAVE BUTTON -> Create new expense
+  // ignore: unused_element
   Widget _createNewExpensesButton() {
     return MaterialButton(
       onPressed: () async {
@@ -79,13 +106,14 @@ class _HomePageState extends State<HomePage> {
           // pop box
           Navigator.pop(context);
           // Create new expense
+          // 새로운 객체 생성
           Expense newExpense = Expense(
             name: nameController.text,
             amount: convertStringToDouble(amountController.text),
             date: DateTime.now(),
           );
           // save to data
-          // What the fuck?
+          // 어떤 타입을 반환해야할지 알려줌 -> 제네릭(Generic)
           await context.read<ExpenseDatabase>().createNewExpense(newExpense);
           // clear controllers
           nameController.clear();

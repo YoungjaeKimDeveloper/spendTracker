@@ -10,6 +10,7 @@ void main() async {
   await ExpenseDatabase.initialize();
 
   runApp(
+    //전체적으로 Provider를 사용할수있게 
     ChangeNotifierProvider(
       create: (context) => ExpenseDatabase(),
       child: MaterialApp(debugShowCheckedModeBanner: false, home: HomePage()),

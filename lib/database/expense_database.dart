@@ -8,12 +8,17 @@ class ExpenseDatabase extends ChangeNotifier {
   // 클래스 레벨에서만 사용할수있음 Static -> 전역적으로 설계됨 -> 싱글톤
   static late Isar isar;
   // final 재할당이 불가능한 변수임 내용은 변경가능
-  // 나중에 _allExpenses의 리스트를 바꿔주기 위해 넣어줌
+
+  
+  // 데이터를 미리 캐싱해서 사용할수있도록함
   final List<Expense> _allExpenses = [];
   // Set up
   // initialize db
 
   // Future<void> initaillzie()로 확실하게 setup시작함
+  // 앱 실행전 초기화해서 필수적으로 필요한 리소스 설정
+  // API초기화
+  // Async로 연결할떄는 할상 Future
   static Future<void> initialize() async {
     // Local에 저장할수있게 getApplicationDocumentsDirectoy.
     final dir = await getApplicationDocumentsDirectory();
@@ -27,8 +32,10 @@ class ExpenseDatabase extends ChangeNotifier {
   // Operations
 
   // Create -- add a new expense
+  // Future -> async를 의미함
   Future<void> createNewExpense(Expense newExpense) async {
     // add to db
+    // isar안에 데이터를작성  //isar테이블안에 expense 
     await isar.writeTxn(() => isar.expenses.put(newExpense));
     // re-read from db
     await readExpenses();
@@ -37,9 +44,11 @@ class ExpenseDatabase extends ChangeNotifier {
   // Read - expense from db
   Future<void> readExpenses() async {
     // fetch all existing expenses from db
+    // isar안에있는 모든 expenses데이터 파일을 의미함
     List<Expense> fetchedExpenses = await isar.expenses.where().findAll();
 
     // give to local expense list
+    // 캐싱되는데이터
     _allExpenses.clear();
     _allExpenses.addAll(fetchedExpenses);
 
