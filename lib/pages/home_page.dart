@@ -1,3 +1,4 @@
+import 'package:app/components/my_list_tile.dart';
 import 'package:app/database/expense_database.dart';
 import 'package:app/helper/helper_function.dart';
 import 'package:app/models/expense.dart';
@@ -71,9 +72,12 @@ class _HomePageState extends State<HomePage> {
                 // get individual expense
                 Expense individualExpense = value.allExpense[index];
                 // return list tile UI
-                return ListTile(
-                  title: Text(individualExpense.name),
-                  trailing: Text(individualExpense.amount.toString()),
+                return MyListTile(
+                  title: individualExpense.name,
+                  trailing: formatAmount(individualExpense.amount),
+                  onEditPress: (context)=> openEditBox,
+                  onDeletePressed: (context)=> openDeleteBox,
+
                 );
               },
             ),
