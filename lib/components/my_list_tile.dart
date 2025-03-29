@@ -26,9 +26,21 @@ class MyListTile extends StatelessWidget {
         motion: const StretchMotion(),
         children: [
           // settings option
-          SlidableAction(onPressed: onEditPress, icon: Icons.settings),
+          SlidableAction(
+            onPressed: onEditPress,
+            icon: Icons.settings,
+            backgroundColor: Colors.grey,
+            foregroundColor: Colors.white,
+            borderRadius: BorderRadius.circular(4),
+          ),
           // delete option
-          SlidableAction(onPressed: onDeletePressed, icon: Icons.delete),
+          SlidableAction(
+            onPressed: onDeletePressed,
+            icon: Icons.delete,
+            backgroundColor: Colors.red,
+            foregroundColor: Colors.white,
+            borderRadius: BorderRadius.circular(4),
+          ),
         ],
       ),
       child: ListTile(title: Text(title), trailing: Text(trailing)),

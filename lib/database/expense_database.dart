@@ -57,7 +57,7 @@ class ExpenseDatabase extends ChangeNotifier {
   }
 
   // Update - edit an expense in db
-  Future<void> updateExpense(int id, Expense updatedExpense) async {
+  Future<void> updxateExpense(int id, Expense updatedExpense) async {
     // make sure new expense has same id as existing one -- check the validation
     updatedExpense.id = id;
     // update in db
