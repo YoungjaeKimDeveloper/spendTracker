@@ -13,12 +13,14 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  // text controllers
+  // name controller
   TextEditingController nameController = TextEditingController();
+  // amount controller
   TextEditingController amountController = TextEditingController();
 
   // Stateful -> 위젯을 생성할때마다 새로운 state를 설정하겠다는 의미임
-  // 화면에 그려질때 데이터를 불러오겠단는것을 의미함
+  // 화면이 그려질때 readExpenses를 불러오겠다는뜻
+  // 보통 initState데이터 불러오기 / 한 번 작업해야하는작업할때 불러와짐
   @override
   void initState() {
     Provider.of<ExpenseDatabase>(context, listen: false).readExpenses();
@@ -111,7 +113,7 @@ class _HomePageState extends State<HomePage> {
           ),
     );
   }
-
+  // 실제 building이 들어가는곳
   @override
   Widget build(BuildContext context) {
     return Consumer<ExpenseDatabase>(
