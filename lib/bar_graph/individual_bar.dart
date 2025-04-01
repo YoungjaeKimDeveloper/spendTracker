@@ -1,6 +1,8 @@
 class IndividualBar {
   // Member Variables
+  // int x = month
   final int x;
+  // double y = expense
   final double y;
 
   // Constructor

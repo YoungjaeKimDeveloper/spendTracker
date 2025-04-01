@@ -1,3 +1,4 @@
+import 'package:app/bar_graph/my_bar_graph.dart';
 import 'package:app/components/my_list_tile.dart';
 import 'package:app/database/expense_database.dart';
 import 'package:app/helper/helper_function.dart';
@@ -113,6 +114,7 @@ class _HomePageState extends State<HomePage> {
           ),
     );
   }
+
   // 실제 building이 들어가는곳
   @override
   Widget build(BuildContext context) {
@@ -123,20 +125,30 @@ class _HomePageState extends State<HomePage> {
               onPressed: openNewExpenseBox,
               child: Icon(Icons.add),
             ),
-            body: ListView.builder(
-              itemCount: value.allExpense.length,
-              itemBuilder: (context, index) {
-                // get individual expense
-                Expense individualExpense = value.allExpense[index];
-                // return list tile UI
-                return MyListTile(
-                  title: individualExpense.name,
-                  trailing: formatAmount(individualExpense.amount),
-                  onEditPress: (context) => openEditBox(individualExpense),
-                  onDeletePressed:
-                      (context) => openDeleteBox(individualExpense),
-                );
-              },
+            body: Column(
+              children: [
+                // GRAPH UI
+                MyBarGraph(monthlySummary: monthlySummary, startMonth: startMonth)
+                // EXPENSE LIST UI
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: value.allExpense.length,
+                    itemBuilder: (context, index) {
+                      // get individual expense
+                      Expense individualExpense = value.allExpense[index];
+                      // return list tile UI
+                      return MyListTile(
+                        title: individualExpense.name,
+                        trailing: formatAmount(individualExpense.amount),
+                        onEditPress:
+                            (context) => openEditBox(individualExpense),
+                        onDeletePressed:
+                            (context) => openDeleteBox(individualExpense),
+                      );
+                    },
+                  ),
+                ),
+              ],
             ),
           ),
     );

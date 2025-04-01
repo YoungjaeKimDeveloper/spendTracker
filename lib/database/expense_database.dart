@@ -9,7 +9,6 @@ class ExpenseDatabase extends ChangeNotifier {
   static late Isar isar;
   // final 재할당이 불가능한 변수임 내용은 변경가능
 
-  
   // 데이터를 미리 캐싱해서 사용할수있도록함
   final List<Expense> _allExpenses = [];
   // Set up
@@ -35,7 +34,7 @@ class ExpenseDatabase extends ChangeNotifier {
   // Future -> async를 의미함
   Future<void> createNewExpense(Expense newExpense) async {
     // add to db
-    // isar안에 데이터를작성  //isar테이블안에 expense 
+    // isar안에 데이터를작성  //isar테이블안에 expense
     await isar.writeTxn(() => isar.expenses.put(newExpense));
     // re-read from db
     await readExpenses();
@@ -74,5 +73,56 @@ class ExpenseDatabase extends ChangeNotifier {
     await readExpenses();
   }
 
-  // Helper
+  /*
+  
+  H E L P E R
+
+  */
+  // calculate total expense for each month
+  Future<Map<int, double>> calculateMonthlyTotals() async {
+    // ensure the expense are read from the db [Always grab a data from database]
+    await readExpenses();
+    // create a map to keep track of total expense per month
+    Map<int, double> monthlyTotals = {
+      // 0:250 Jan
+      // 1:100 Feb
+    };
+
+    // iterate over all expense
+    for (var expense in _allExpenses) {
+      // extratch the month from date of the expense
+      int month = expense.date.month;
+      // if the month is not yet in the map, initialize to 0
+      if (!monthlyTotals.containsKey(month)) {
+        monthlyTotals[month] = 0;
+      }
+      // add the expense amount to the total for the month
+      monthlyTotals[month] = monthlyTotals[month]! + expense.amount;
+    }
+    return monthlyTotals;
+  }
+
+  // get start month
+  int getStartMonth() {
+    if (_allExpenses.isEmpty) {
+      return DateTime.now()
+          .month; // default to current month is no expense are recorded
+    }
+    // sort expenses by date to find the earliest
+    _allExpenses.sort((a, b) => a.date.compareTo(b.date));
+
+    return _allExpenses.first.date.month;
+  }
+
+  // get start year
+  int getStartYear() {
+    if (_allExpenses.isEmpty) {
+      return DateTime.now()
+          .year; // default to current month is no expense are recorded
+    }
+    // sort expenses by date to find the earliest
+    _allExpenses.sort((a, b) => a.date.compareTo(b.date));
+
+    return _allExpenses.first.date.year;
+  }
 }
