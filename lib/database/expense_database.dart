@@ -75,33 +75,42 @@ class ExpenseDatabase extends ChangeNotifier {
 
   /*
   
-  H E L P E R
+  H E L P E R - For Graph
 
   */
+
   // calculate total expense for each month
+  // Non-Blocking System Design
+  // int = month
+  // double = expense
   Future<Map<int, double>> calculateMonthlyTotals() async {
     // ensure the expense are read from the db [Always grab a data from database]
+    // DB 접근할때는 항상 await 통하여 접근해주기
     await readExpenses();
     // create a map to keep track of total expense per month
+    // 매달 : 지출금액
     Map<int, double> monthlyTotals = {
-      // 0:250 Jan
-      // 1:100 Feb
+      // 0 : 250 Jan
+      // 1 : 100 Feb
     };
 
-    // iterate over all expense
+    // iterate over all expense - expense반복에서 끌어내기
     for (var expense in _allExpenses) {
       // extratch the month from date of the expense
+      // 개별접근.date.month -> month 반환
       int month = expense.date.month;
       // if the month is not yet in the map, initialize to 0
+      // 현재 month를 의미함
       if (!monthlyTotals.containsKey(month)) {
         monthlyTotals[month] = 0;
       }
       // add the expense amount to the total for the month
+      // totla values를 의미함
       monthlyTotals[month] = monthlyTotals[month]! + expense.amount;
     }
     return monthlyTotals;
   }
-
+  
   // get start month
   int getStartMonth() {
     if (_allExpenses.isEmpty) {
@@ -122,7 +131,11 @@ class ExpenseDatabase extends ChangeNotifier {
     }
     // sort expenses by date to find the earliest
     _allExpenses.sort((a, b) => a.date.compareTo(b.date));
-
+    // first는 List에서 쓸수있는 프러퍼티를 의미함
     return _allExpenses.first.date.year;
   }
 }
+
+
+// Note: Month : Total
+// 만 생각하기

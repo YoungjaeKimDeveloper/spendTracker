@@ -22,10 +22,29 @@ class _HomePageState extends State<HomePage> {
   // Stateful -> 위젯을 생성할때마다 새로운 state를 설정하겠다는 의미임
   // 화면이 그려질때 readExpenses를 불러오겠다는뜻
   // 보통 initState데이터 불러오기 / 한 번 작업해야하는작업할때 불러와짐
+
+  // Future to load graph data - what the Fuck?
+  // Fifth...[Guide]
+  Future<Map<int, double>>? _monthlyTotalFuture;
+
   @override
   void initState() {
+    // read db an initial startup
+    // ...[Guide-7]
     Provider.of<ExpenseDatabase>(context, listen: false).readExpenses();
+    // load futures
+    // ...[Guide-8]
+    refreshGraphData();
     super.initState();
+  }
+
+  // ...[Guide-6] - what the fuck?
+  void refreshGraphData() {
+    _monthlyTotalFuture =
+        Provider.of<ExpenseDatabase>(
+          context,
+          listen: false,
+        ).calculateMonthlyTotals();
   }
 
   // open new expense box
@@ -119,16 +138,70 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Consumer<ExpenseDatabase>(
-      builder:
-          (context, value, child) => Scaffold(
-            floatingActionButton: FloatingActionButton(
-              onPressed: openNewExpenseBox,
-              child: Icon(Icons.add),
-            ),
-            body: Column(
+      builder: (context, value, child) {
+        // First ... [Guide]
+        // get dates
+        // 그래프를 그리기위해 첫번쨰 month를 들고옴
+        int startMonth = value.getStartMonth();
+        // 그래프를 그리기위해 첫번쨰 year를 들고옴
+        int startYear = value.getStartYear();
+        // 현재 month를 들고옴
+        int currentMonth = DateTime.now().month;
+        // 현재 year를 들고옴
+        int currentYear = DateTime.now().year;
+
+        // Third...[Guide] - 몇달있는기 가져오기
+        // calculate the number of months since the first month
+        // How many bars we will display
+        int monthCount = calculateMonthCount(
+          startYear,
+          startMonth,
+          currentYear,
+          currentMonth,
+        );
+        // only display the expenses for the current month
+        // return UI
+        return Scaffold(
+          floatingActionButton: FloatingActionButton(
+            onPressed: openNewExpenseBox,
+            child: Icon(Icons.add),
+          ),
+          body: SafeArea(
+            child: Column(
               children: [
+                SizedBox(height: 20),
                 // GRAPH UI
-                MyBarGraph(monthlySummary: monthlySummary, startMonth: startMonth)
+                SizedBox(
+                  // set the Size
+                  height: 250,
+                  // Forth...[Guide] - What the fuck?
+                  child: FutureBuilder(
+                    future: _monthlyTotalFuture,
+                    builder: (context, snapshot) {
+                      // data is loaded
+                      // Third...[Guide-7]
+                      if (snapshot.connectionState == ConnectionState.done) {
+                        final monthlyTotals = snapshot.data ?? {};
+                        // Third...[Guide-8]
+                        // create the list of monthly summary
+                        List<double> monthlySummary = List.generate(
+                          monthCount,
+                          (index) => monthlyTotals[startMonth + index] ?? 0.0,
+                        );
+                        // 실제로 보이는 UI
+                        return MyBarGraph(
+                          monthlySummary: monthlySummary,
+                          startMonth: startMonth,
+                        );
+
+                        // loading...
+                      } else {
+                        return const Center(child: Text("Loading..."));
+                      }
+                    },
+                  ),
+                ),
+
                 // EXPENSE LIST UI
                 Expanded(
                   child: ListView.builder(
@@ -151,6 +224,8 @@ class _HomePageState extends State<HomePage> {
               ],
             ),
           ),
+        );
+      },
     );
   }
 
@@ -188,6 +263,9 @@ class _HomePageState extends State<HomePage> {
           // save to data
           // 어떤 타입을 반환해야할지 알려줌 -> 제네릭(Generic)
           await context.read<ExpenseDatabase>().createNewExpense(newExpense);
+
+          // refresh graph
+          refreshGraphData();
           // clear controllers
           nameController.clear();
           amountController.clear();
@@ -225,6 +303,7 @@ class _HomePageState extends State<HomePage> {
             existingId,
             updatedExpense,
           );
+          refreshGraphData();
         }
       },
       child: const Text("Save"),
@@ -238,6 +317,7 @@ class _HomePageState extends State<HomePage> {
         Navigator.pop(context);
         // delete expense from db
         await context.read<ExpenseDatabase>().deleteExpense(id);
+        refreshGraphData();
       },
       child: Text("Delete"),
     );
